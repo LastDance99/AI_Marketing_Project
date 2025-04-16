@@ -30,8 +30,22 @@
 
 ## 📁 프로젝트 구조
 
-AI_Marketing_Project/ ├── backend/ # Django 백엔드 │ ├── django_root/ # 설정 및 루트 │ └── app_name/ # 주요 기능 앱 │ ├── frontend/ # 프론트엔드 │ ├── public/
-│ └── src/ │ ├── .gitignore ├── README.md └── requirements.txt
+ai-marketing-project/
+│
+├── backend/              # Django 백엔드
+│   ├── django_root/      # settings.py, urls.py 등
+│   ├── app_name/         # 너의 앱 (ex. content_generator)
+│   ├── manage.py
+│   └── requirements.txt  # pip freeze로 생성
+│
+├── frontend/             # React 또는 HTML/JS 프론트엔드
+│   ├── public/
+│   ├── src/
+│   └── package.json
+│
+├── .gitignore
+├── README.md
+└── LICENSE (선택)
 
 
 
