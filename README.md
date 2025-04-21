@@ -14,14 +14,17 @@
 ## 🛠 기술 스택
 
 ### Frontend
+
 - HTML / CSS / JavaScript (또는 React)
 - Axios (AJAX 통신용)
 
 ### Backend
+
 - Django 5.x (DRF 포함 가능)
 - PostgreSQL 또는 SQLite
 
 ### AI
+
 - OpenAI API 또는 Fine-tuned 모델
 - Prompt Engineering
 - Embedding + Vector DB (RAG)
@@ -32,22 +35,20 @@
 
 ai-marketing-project/
 │
-├── backend/              # Django 백엔드
-│   ├── django_root/      # settings.py, urls.py 등
-│   ├── app_name/         # 너의 앱 (ex. content_generator)
-│   ├── manage.py
-│   └── requirements.txt  # pip freeze로 생성
+├── backend/ # Django 백엔드
+│ ├── django_root/ # settings.py, urls.py 등
+│ ├── app_name/ # 너의 앱 (ex. content_generator)
+│ ├── manage.py
+│ └── requirements.txt # pip freeze로 생성
 │
-├── frontend/             # React 또는 HTML/JS 프론트엔드
-│   ├── public/
-│   ├── src/
-│   └── package.json
+├── frontend/ # React 또는 HTML/JS 프론트엔드
+│ ├── public/
+│ ├── src/
+│ └── package.json
 │
 ├── .gitignore
 ├── README.md
 └── LICENSE (선택)
-
-
 
 ---
 
@@ -88,3 +89,10 @@ npm run dev
 
 
 
+백엔드 의존성 관리
+requirements.txt 파일 만들기
+
+pip freeze > requirements.txt
+
+pip install -r requirements.txt
+```
