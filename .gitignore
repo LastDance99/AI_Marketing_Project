@@ -2,16 +2,21 @@
 __pycache__/
 *.py[cod]
 *.sqlite3
-env/
 venv/
+env/
 
 # Django
 *.log
 *.pot
 *.pyc
 db.sqlite3
+media/
+staticfiles/
 
-# Node.js
+# 환경 변수
+.env
+
+# Node.js (프론트엔드)
 node_modules/
 dist/
 build/
@@ -19,9 +24,6 @@ build/
 # VSCode
 .vscode/
 
-# 환경파일
-.env
-
-# OS
+# macOS, Windows OS 관련
 .DS_Store
 Thumbs.db
