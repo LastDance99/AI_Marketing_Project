@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-!cjnb5w9ka6l(u-l991x17@t$xq(n_hojjw1cry2ixq-oiyads
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',      # 자기 자신 (로컬 개발용)
+    'localhost',      # 자기 자신 도메인 방식
+    '192.168.0.37',   # ✅ 너의 내부 IP (프론트에서 접근할 주소!)
+]
 
 
 # Application definition
@@ -43,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders', # 프론트와 API가 다른 포트나 도메인일 경우 CORS(보안) 문제 해결
     'drf_yasg', # API 문서 자동 생성 (Swagger/OpenAPI)
     'core', # 프로젝트 전체에서 공통적으로 쓰는 기능이나 설정을 모아놓는 용도
+    'board', # 게시판 앱
 ]
 
 MIDDLEWARE = [
@@ -61,7 +66,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR.parent, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,7 +131,7 @@ USE_TZ = False
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'backend', 'static'),
+    os.path.join(BASE_DIR, 'static'),
     ]
 
 # Default primary key field type
@@ -136,7 +141,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Media 파일 설정
 MEDIA_URL = '/media/' 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'backend', 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 
