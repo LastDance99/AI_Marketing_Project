@@ -56,8 +56,8 @@ ai-marketing-project/
 
 ```bash
 cd backend
-python -m venv env
-source env/bin/activate  # Windows: env\Scripts\activate
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py runserver
 
@@ -96,7 +96,6 @@ pip freeze > requirements.txt
 
 pip install -r requirements.txt
 ```
-
 
 개발용 오픈 서버()
 python manage.py runserver 0.0.0.0:8000
