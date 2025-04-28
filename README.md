@@ -96,3 +96,7 @@ pip freeze > requirements.txt
 
 pip install -r requirements.txt
 ```
+
+
+개발용 오픈 서버()
+python manage.py runserver 0.0.0.0:8000

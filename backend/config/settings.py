@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',      # 자기 자신 (로컬 개발용)
     'localhost',      # 자기 자신 도메인 방식
-    '192.168.0.37',   # ✅ 너의 내부 IP (프론트에서 접근할 주소!)
+    '192.168.0.171',   # ✅ 너의 내부 IP (프론트에서 접근할 주소!)
 ]
 
 
@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'drf_yasg', # API 문서 자동 생성 (Swagger/OpenAPI)
     'core', # 프로젝트 전체에서 공통적으로 쓰는 기능이나 설정을 모아놓는 용도
     'board', # 게시판 앱
+    'accounts', # 계정 관리 앱
+    'rest_framework_simplejwt.token_blacklist'  
 ]
 
 MIDDLEWARE = [
@@ -157,6 +159,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    
 }
 
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'BLACKLIST_AFTER_ROTATION': True,
+}
