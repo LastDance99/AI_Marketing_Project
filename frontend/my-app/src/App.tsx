@@ -1,25 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import PostList from './components/PostList';
+import PostForm from './components/PostForm';
+import PostDetail from './components/PostDetail';
+import PostEdit from './components/PostEdit';
+import SignupForm from './components/SignupForm';
+import LoginForm from './components/LoginForm'; 
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        pauseOnHover={false}
+        pauseOnFocusLoss={false}
+      />
+      <Routes>
+        <Route path="/" element={<PostList />} />
+        <Route path="/write" element={<PostForm />} />
+        <Route path="/posts/:id" element={<PostDetail />} />
+        <Route path="/edit/:id" element={<PostEdit />} />
+        <Route path="/sign" element={<SignupForm />} />
+        <Route path="/login" element={<LoginForm />} />
+      </Routes>
+    </Router>
   );
 }
 
