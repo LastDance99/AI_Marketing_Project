@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar';
 import { toast } from 'react-toastify';
 import { Post } from '../types/post';
+import { UserInfo } from '../types/user';
 import {
     Wrapper,
     Title,
@@ -23,14 +24,32 @@ const PostList = () => {
     const [username, setUsername] = useState<string | null>(null);
     const navigate = useNavigate();
 
+    // ✅ 자동 로그인 유효성 검사 (토큰이 유효한지 확인)
     useEffect(() => {
-        const savedUsername = localStorage.getItem('username');
-        console.log('✅ 로컬스토리지에서 가져온 username:', savedUsername);
-        if (savedUsername) {
-            setUsername(savedUsername);
-        } else {
-            setUsername(null);  // 명시적으로 null 처리
-        }
+        const validateToken = async () => {
+            const accessToken = localStorage.getItem('access');
+            if (!accessToken) return;
+
+            try {
+                const res = await API.get<UserInfo>('/accounts/me/', {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
+                const user = res.data;
+                setUsername(user.username);  // ✅ 정상 로그인 상태로 설정
+            } catch (err: any) {
+                if (err.response?.status === 401 || err.response?.status === 403) {
+                    toast.warn('세션이 만료되었거나 계정이 존재하지 않습니다.');
+                    localStorage.removeItem('access');
+                    localStorage.removeItem('refresh');
+                    localStorage.removeItem('username');
+                    window.location.reload();  // 새로고침으로 UI 리셋
+                }
+            }
+        };
+
+        validateToken();
     }, []);
 
     const fetchPosts = async (search: string = '') => {
@@ -124,9 +143,6 @@ const PostList = () => {
 
             <PostListContainer>
                 {posts.map(post => (
-                    // console.log("🔍 현재 로그인한 사용자:", username),
-                    // console.log("🔍 게시글 작성자:", post.author),
-                    // console.log("✅ 비교 결과:", post.author === username),
                     <PostItem key={post.id}>
                         <PostLink to={`/posts/${post.id}`}>
                             <div>

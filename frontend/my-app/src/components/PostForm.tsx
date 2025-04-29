@@ -3,6 +3,7 @@ import API from '../api/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { UploadImageResponse } from '../types/post';
+import { Link } from 'react-router-dom';
 import {
     FormWrapper,
     StyledForm,
@@ -12,6 +13,7 @@ import {
     FileLabel,
     HiddenInput,
     FileName,
+    HomeLink,
 } from './PostForm.styles';
 import { Editor } from '@toast-ui/react-editor';
 import '@toast-ui/editor/dist/toastui-editor.css';
@@ -27,7 +29,7 @@ const PostForm = () => {
 
     useEffect(() => {
         if (editorRef.current) {
-            editorRef.current.getInstance().setMarkdown(''); // ✅ 강제 초기화
+            editorRef.current.getInstance().setHTML(''); // ✅ 강제 초기화
         }
     }, []);
 
@@ -59,7 +61,7 @@ const PostForm = () => {
         return;
         }
 
-        const content = editorRef.current.getInstance().getMarkdown();
+        const content = editorRef.current.getInstance().getHTML();
         if (!content.trim()) {
         toast.error('본문을 입력해주세요.');
         return;
@@ -88,7 +90,7 @@ const PostForm = () => {
         });
         toast.success('글 작성 완료!');
         setTitle('');
-        editorRef.current.getInstance().setMarkdown('');
+        editorRef.current.getInstance().setHTML('');
         setFiles([]);
         navigate('/');
         } catch (error) {
@@ -100,6 +102,9 @@ const PostForm = () => {
     return (
         <FormWrapper>
         <StyledForm onSubmit={handleSubmit}>
+            <Link to="/" style={{ textDecoration: 'none' }}>
+                <HomeLink>←</HomeLink>
+            </Link>
             <FormTitle>✍️ 새 글 작성</FormTitle>
 
             <Input

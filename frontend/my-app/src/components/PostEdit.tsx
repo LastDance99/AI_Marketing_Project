@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import API from '../api/api';
 import { toast } from 'react-toastify';
-import { Post } from '../types/post';
+import { Post, Attachment } from '../types/post';
 import {
     FormWrapper,
     StyledForm,
@@ -11,6 +11,11 @@ import {
     SubmitButton,
     FileLabel,
     HiddenInput,
+    HomeLink,
+    FileName,
+    FileUploadRow,
+    FileList,
+    ExistingFileRow,
 } from './PostEdit.styles';
 import { Editor } from '@toast-ui/react-editor';
 import '@toast-ui/editor/dist/toastui-editor.css';
@@ -21,29 +26,30 @@ const PostEdit = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
-    const [content, setContent] = useState(''); // ✅ 별도로 content를 상태로 관리
+    const [content, setContent] = useState('');
     const [files, setFiles] = useState<File[]>([]);
-    const [existingFiles, setExistingFiles] = useState<string[]>([]);
-    const [deleteFiles, setDeleteFiles] = useState<string[]>([]);
+    const [existingFiles, setExistingFiles] = useState<Attachment[]>([]); // ✅ Attachment 타입 배열로 변경
+    const [deleteIds, setDeleteIds] = useState<number[]>([]); // ✅ 삭제할 첨부파일 ID 목록
     const [loading, setLoading] = useState(true);
     const editorRef = useRef<Editor>(null);
 
     useEffect(() => {
+        // ✅ 게시글 불러오기
         const fetchPost = async () => {
-        try {
-            const token = localStorage.getItem('access');
-            const res = await API.get<Post>(`/posts/posts/${id}/`, {
-            headers: { Authorization: `Bearer ${token}` },
-            });
+            try {
+                const token = localStorage.getItem('access');
+                const res = await API.get<Post>(`/posts/posts/${id}/`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-            setTitle(res.data.title);
-            setContent(res.data.content || ''); // ✅ content를 상태에 저장
-            setExistingFiles(res.data.attachments?.map(att => att.file) || []);
-        } catch (error) {
-            console.error('게시글 불러오기 실패:', error);
-        } finally {
-            setLoading(false);
-        }
+                setTitle(res.data.title);
+                setContent(res.data.content || '');
+                setExistingFiles(res.data.attachments || []); // ✅ 전체 Attachment 객체 저장
+            } catch (error) {
+                console.error('게시글 불러오기 실패:', error);
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchPost();
@@ -55,39 +61,41 @@ const PostEdit = () => {
         const formData = new FormData();
         formData.append('title', title);
 
-        const editorContent = editorRef.current?.getInstance().getMarkdown() || '';
+        const editorContent = editorRef.current?.getInstance().getHTML() || '';
         formData.append('content', editorContent);
 
         files.forEach(file => {
-        formData.append('attachments', file);
+            formData.append('attachments', file);
         });
 
-        deleteFiles.forEach(fileUrl => {
-        formData.append('delete_attachments', fileUrl);
-        });
+        if (deleteIds.length > 0) {
+            formData.append('remove_attachment_ids', JSON.stringify(deleteIds));
+        }
 
         try {
-        const token = localStorage.getItem('access');
-        await API.put(`/posts/posts/${id}/`, formData, {
-            headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-            },
-        });
-        toast.success('수정 완료!');
-        navigate('/');
+            const token = localStorage.getItem('access');
+            await API.patch(`/posts/posts/${id}/`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            toast.success('수정 완료!');
+            navigate('/');
         } catch (err) {
-        toast.error('수정 중 오류 발생');
-        console.error(err);
+            toast.error('수정 중 오류 발생');
+            console.error(err);
         }
     };
 
-    const toggleDelete = (fileUrl: string) => {
-        if (deleteFiles.includes(fileUrl)) {
-        setDeleteFiles(prev => prev.filter(url => url !== fileUrl));
-        } else {
-        setDeleteFiles(prev => [...prev, fileUrl]);
-        }
+    // ✅ 파일 삭제 핸들러 (ID 기반 저장)
+    const handleFileDelete = (attachmentId: number) => {
+        if (!window.confirm('정말 이 파일을 삭제하시겠습니까?')) return;
+
+        setDeleteIds(prev => [...prev, attachmentId]);
+        setExistingFiles(prev => prev.filter(att => att.id !== attachmentId));
+
+        console.log('🛠️ [삭제할 첨부파일 ID 저장 완료]:', [...deleteIds, attachmentId]);
     };
 
     if (loading) {
@@ -96,47 +104,83 @@ const PostEdit = () => {
 
     return (
         <FormWrapper>
-        <StyledForm onSubmit={handleUpdate}>
-            <FormTitle>🛠 글 수정</FormTitle>
-            <Input
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="제목"
-            required
-            />
-            <Editor
-            ref={editorRef}
-            initialValue={content} // ✅ 처음 렌더링할 때만 초기값으로 세팅
-            previewStyle="vertical"
-            height="400px"
-            initialEditType="wysiwyg"
-            useCommandShortcut
-            hideModeSwitch
-            usageStatistics={false}
-            />
-            {existingFiles.map((fileUrl, idx) => (
-            <div key={idx}>
-                📎 기존 파일:
-                <a href={`${BASE_URL}${fileUrl}`} download> 다운로드</a>
-                <label style={{ marginLeft: '8px' }}>
-                <input
-                    type="checkbox"
-                    checked={deleteFiles.includes(fileUrl)}
-                    onChange={() => toggleDelete(fileUrl)}
+            <StyledForm onSubmit={handleUpdate}>
+                {/* ✅ Home으로 돌아가기 링크 */}
+                <Link to="/" style={{ textDecoration: 'none' }}>
+                    <HomeLink>←</HomeLink>
+                </Link>
+
+                <FormTitle>🛠 글 수정</FormTitle>
+
+                <Input
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    placeholder="제목"
+                    required
                 />
-                삭제
-                </label>
-            </div>
-            ))}
-            <FileLabel htmlFor="file">📎 새 파일 추가</FileLabel>
-            <HiddenInput
-            id="file"
-            type="file"
-            multiple
-            onChange={e => setFiles(Array.from(e.target.files || []))}
-            />
-            <SubmitButton type="submit">수정하기</SubmitButton>
-        </StyledForm>
+
+                <Editor
+                    ref={editorRef}
+                    initialValue={content}
+                    previewStyle="vertical"
+                    height="400px"
+                    initialEditType="wysiwyg"
+                    useCommandShortcut
+                    hideModeSwitch
+                    usageStatistics={false}
+                />
+
+                {/* ✅ 첨부파일 리스트 + 삭제 버튼(❌) */}
+                {existingFiles.map((fileObj) => {
+                    const fileUrl = fileObj.file.startsWith('http') ? fileObj.file : `${BASE_URL}/${fileObj.file}`;
+
+                    return (
+                        <ExistingFileRow key={fileObj.id}>
+                            📎
+                            <a
+                                href={fileUrl}
+                                download
+                                style={{ color: '#1c7ed6' }}
+                            >
+                                {fileUrl.split('/').pop()}
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => handleFileDelete(fileObj.id)} // ✅ ID 기반 삭제
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: 'red',
+                                    fontSize: '20px',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                ❌
+                            </button>
+                        </ExistingFileRow>
+                    );
+                })}
+
+                {/* ✅ 새 파일 추가 업로드 */}
+                <FileUploadRow>
+                    <FileLabel htmlFor="file">📎 새 파일 추가</FileLabel>
+                    <HiddenInput
+                        id="file"
+                        type="file"
+                        multiple
+                        onChange={e => setFiles(Array.from(e.target.files || []))}
+                    />
+                    {files.length > 0 && (
+                        <FileList>
+                            {files.map((file, idx) => (
+                                <FileName key={idx}>📄 {file.name}</FileName>
+                            ))}
+                        </FileList>
+                    )}
+                </FileUploadRow>
+
+                <SubmitButton type="submit">수정하기</SubmitButton>
+            </StyledForm>
         </FormWrapper>
     );
 };

@@ -1,11 +1,26 @@
-// 🎨 PostList.styles.ts - 최종 리디자인
+// PostList.styles.ts
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
+// 공통 스타일 변수
+const fontFamily = `'Noto Sans KR', sans-serif`;
+const primaryColor = '#228be6';
+const hoverColor = '#1c7ed6';
+const shadowColor = 'rgba(0, 0, 0, 0.08)';
+
+export const Wrapper = styled.div`
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding: 48px 16px;
+    font-family: ${fontFamily};
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+`;
 
 export const NavBar = styled.div`
     width: 100%;
-    max-width: 700px;
+    max-width: 720px;
     margin: 0 auto 16px auto;
     display: flex;
     justify-content: flex-end;
@@ -16,7 +31,7 @@ export const NavBar = styled.div`
 export const NavButton = styled.button`
     background-color: #f1f3f5;
     color: #343a40;
-    padding: 8px 12px;
+    padding: 8px 14px;
     border-radius: 6px;
     border: 1px solid #ced4da;
     cursor: pointer;
@@ -28,21 +43,20 @@ export const NavButton = styled.button`
     }
 `;
 
-export const Wrapper = styled.div`
-    padding: 48px 16px;
-    background-color: #f8f9fa;
-    min-height: 100vh;
-    font-family: 'Noto Sans KR', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-`;
-
 export const Title = styled.h2`
     font-size: 28px;
     font-weight: 700;
     color: #212529;
     margin-bottom: 24px;
+`;
+
+export const TopBar = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 720px;
+    margin-bottom: 28px;
 `;
 
 export const PostListContainer = styled.ul`
@@ -54,28 +68,28 @@ export const PostListContainer = styled.ul`
 `;
 
 export const PostItem = styled.li`
-    background: white;
+    background-color: #ffffff;
     margin-bottom: 20px;
-    padding: 18px 24px;
+    padding: 20px 24px;
     border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 10px ${shadowColor};
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: box-shadow 0.2s ease;
 
     &:hover {
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 6px 14px ${shadowColor};
     }
 
     a {
-        color: #1c7ed6;
+        color: ${primaryColor};
         text-decoration: none;
         font-size: 16px;
         font-weight: 500;
 
         &:hover {
-            text-decoration: underline;
+        text-decoration: underline;
         }
     }
 
@@ -91,10 +105,10 @@ export const PostItem = styled.li`
 
     .edit {
         background-color: #edf6ff;
-        color: #1c7ed6;
+        color: ${primaryColor};
 
         &:hover {
-            background-color: #dbeeff;
+        background-color: #dbeeff;
         }
     }
 
@@ -103,7 +117,7 @@ export const PostItem = styled.li`
         color: #fa5252;
 
         &:hover {
-            background-color: #ffe3e3;
+        background-color: #ffe3e3;
         }
     }
 `;
@@ -114,7 +128,7 @@ export const ActionLinks = styled.div`
 `;
 
 export const WriteButton = styled(Link)`
-    background-color: #228be6;
+    background-color: ${primaryColor};
     color: white;
     padding: 10px 20px;
     border-radius: 6px;
@@ -124,27 +138,19 @@ export const WriteButton = styled(Link)`
     transition: background 0.2s ease;
 
     &:hover {
-        background-color: #1c7ed6;
+        background-color: ${hoverColor};
     }
-`;
-
-export const TopBar = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 720px;
-    margin-bottom: 28px;
 `;
 
 export const PostLink = styled(Link)`
     display: block;
     padding: 10px;
     text-decoration: none;
-    color: #000 !important;
+    color: #212529;
     font-weight: bold;
+    transition: background 0.2s ease;
 
     &:hover {
-        background-color: #f0f0f0;
+        background-color: #f1f3f5;
     }
 `;

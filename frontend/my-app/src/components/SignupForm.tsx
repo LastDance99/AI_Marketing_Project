@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
     FormWrapper,
@@ -9,11 +9,13 @@ import {
     InputWrapper,
     Input,
     SubmitButton,
-    Message
+    Message,
+    HomeLink,
+    EmailVerifyButton,
 } from './SignupForm.styles';
-import { SignupResponse, CheckFieldResponse } from '../types/user';
+import { SignupResponse, CheckFieldResponse, EmailVerifyResponse } from '../types/user';
 
-const DEBOUNCE_DELAY = 500;  // 0.5초 후에 요청
+const DEBOUNCE_DELAY = 500;
 
 const useDebouncedCheck = (
     value: string,
@@ -52,34 +54,73 @@ const useDebouncedCheck = (
 const SignupForm = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+    const [emailCode, setEmailCode] = useState('');
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
+    const [emailRequested, setEmailRequested] = useState(false); // ✅ 인증코드 요청 여부
     const [password, setPassword] = useState('');
     const [password2, setPassword2] = useState('');
+
     const [usernameMessage, setUsernameMessage] = useState('');
     const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
     const [emailMessage, setEmailMessage] = useState('');
     const [isEmailAvailable, setIsEmailAvailable] = useState<boolean | null>(null);
+
     const navigate = useNavigate();
 
-    // username 자동 중복확인
-    useDebouncedCheck(
-    username,
-    '/accounts/check-username/?username=',
-    setUsernameMessage,
-    setIsUsernameAvailable
-);
+    useDebouncedCheck(username, '/accounts/check-username/?username=', setUsernameMessage, setIsUsernameAvailable);
+    useDebouncedCheck(email, '/accounts/check-email/?email=', setEmailMessage, setIsEmailAvailable);
 
-useDebouncedCheck(
-    email,
-    '/accounts/check-email/?email=',
-    setEmailMessage,
-    setIsEmailAvailable
-);
+    const handleEmailVerification = async () => {
+        if (!email) return toast.error('이메일을 입력해주세요.');
+
+        try {
+            await API.post('/accounts/send-verification/', { email });
+            toast.success('인증 코드가 이메일로 전송되었습니다.');
+            setEmailRequested(true); // ✅ 요청됨 상태 설정
+        } catch (err) {
+            toast.error('이메일 인증 요청 실패');
+            console.error(err);
+        }
+    };
+
+    const handleVerifyCode = async () => {
+        if (!email || !emailCode) {
+            toast.error('이메일과 인증 코드를 입력해주세요.');
+            return;
+        }
+
+        console.log('📦 요청 보냄:', { email, code: emailCode });
+
+        try {
+            const res = await API.post<EmailVerifyResponse>('/accounts/verify-code/', {
+                email,
+                code: emailCode,
+            });
+
+            console.log('✅ 인증 결과:', res.data);
+
+            if (res.data.verified) {
+                toast.success('이메일 인증 성공!');
+                setIsEmailVerified(true);
+            } else {
+                toast.error('인증 코드가 올바르지 않습니다.');
+            }
+        } catch (err) {
+            toast.error('인증 실패');
+            console.error(err);
+        }
+    };
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!username || !email || !password || !password2) {
             toast.error('모든 항목을 입력해주세요.');
+            return;
+        }
+
+        if (!isEmailVerified) {
+            toast.error('이메일 인증을 완료해주세요.');
             return;
         }
 
@@ -112,15 +153,6 @@ useDebouncedCheck(
             });
 
             toast.success(res.data.message || '회원가입 완료!');
-            setUsername('');
-            setEmail('');
-            setPassword('');
-            setPassword2('');
-            setUsernameMessage('');
-            setEmailMessage('');
-            setIsUsernameAvailable(null);
-            setIsEmailAvailable(null);
-
             navigate('/');
         } catch (err: any) {
             console.error('회원가입 에러:', err.response?.data);
@@ -131,6 +163,10 @@ useDebouncedCheck(
     return (
         <FormWrapper>
             <StyledForm onSubmit={handleSignup}>
+                <Link to="/" style={{ textDecoration: 'none' }}>
+                    <HomeLink>←</HomeLink>
+                </Link>
+
                 <FormTitle>📝 회원가입</FormTitle>
 
                 <InputWrapper>
@@ -153,7 +189,11 @@ useDebouncedCheck(
                         type="email"
                         placeholder="이메일"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                            setEmail(e.target.value);
+                            setIsEmailVerified(false);
+                            setEmailRequested(false);
+                        }}
                         required
                     />
                     {emailMessage && (
@@ -162,6 +202,36 @@ useDebouncedCheck(
                         </Message>
                     )}
                 </InputWrapper>
+
+                <EmailVerifyButton
+                    type="button"
+                    onClick={handleEmailVerification}
+                    disabled={isEmailVerified}
+                >
+                    이메일 인증 요청
+                </EmailVerifyButton>
+
+                {emailRequested && (
+                    <>
+                        <InputWrapper>
+                            <Input
+                                type="text"
+                                placeholder="인증 코드 입력"
+                                value={emailCode}
+                                onChange={(e) => setEmailCode(e.target.value)}
+                                disabled={isEmailVerified}
+                            />
+                        </InputWrapper>
+
+                        <EmailVerifyButton
+                            type="button"
+                            onClick={handleVerifyCode}
+                            disabled={isEmailVerified}
+                        >
+                            인증 확인
+                        </EmailVerifyButton>
+                    </>
+                )}
 
                 <InputWrapper>
                     <Input
@@ -182,6 +252,7 @@ useDebouncedCheck(
                         required
                     />
                 </InputWrapper>
+
                 <SubmitButton type="submit">가입하기</SubmitButton>
             </StyledForm>
         </FormWrapper>

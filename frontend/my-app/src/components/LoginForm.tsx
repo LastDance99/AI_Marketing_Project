@@ -10,7 +10,7 @@ import {
     FormTitle,
     Input,
     SubmitButton,
-    HomeLink
+    HomeLink,
 } from './LoginForm.styles';
 import { LoginResponse } from '../types/user';
 

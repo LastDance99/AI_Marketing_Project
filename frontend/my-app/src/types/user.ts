@@ -15,3 +15,11 @@ export interface CheckFieldResponse {
     field: string;
     is_taken: boolean;
 }
+
+export interface EmailVerifyResponse {
+    verified: boolean;
+}
+
+export interface UserInfo {
+    username: string;
+}
