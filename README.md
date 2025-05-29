@@ -20,7 +20,7 @@
 
 ## 📁 프로젝트 구조
 
-ai-marketing-project/
+REST_API_TO_DO_APP/
 │
 ├── backend/ # Django 백엔드
 │ ├── django_root/ # settings.py, urls.py 등
