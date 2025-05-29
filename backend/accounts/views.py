@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,7 +9,9 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
-
+from django.core.mail import send_mail
+from .models import EmailVerification
+from django.utils import timezone
 
 # Create your views here.
 
@@ -77,3 +80,56 @@ class LogoutView(APIView):
             return Response({"error": str(e)}, status=400)
 
 
+
+    
+class SendVerificationEmailView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': '이메일이 필요합니다.'}, status=400)
+
+        # ✅ 무조건 새 코드 발급
+        code = str(random.randint(100000, 999999))
+
+        # ✅ 이전 코드 무효화 (덮어쓰기)
+        EmailVerification.objects.update_or_create(
+            email=email,
+            defaults={'code': code, 'created_at': timezone.now()}
+        )
+
+        # ✅ 메일 발송
+        send_mail(
+            subject='[김대원 임시 이메일] 이메일 인증 코드',
+            message=f'인증 코드: {code}',
+            from_email='simyuong68@gmail.com',
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        return Response({'message': '인증 코드가 이메일로 전송되었습니다.'}, status=200)
+    
+    
+class VerifyEmailCodeView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+
+        if not email or not code:
+            return Response({'error': '이메일과 코드가 필요합니다.'}, status=400)
+
+        try:
+            record = EmailVerification.objects.get(email=email)
+
+            # ✅ 조건: 코드 일치 + 유효시간 내
+            if record.code == code:
+                if not record.is_expired():
+                    return Response({'verified': True}, status=200)
+                else:
+                    return Response({'verified': False, 'error': '인증 코드가 만료되었습니다.'}, status=400)
+            else:
+                return Response({'verified': False, 'error': '인증 코드가 올바르지 않습니다.'}, status=400)
+
+        except EmailVerification.DoesNotExist:
+            return Response({'error': '해당 이메일에 대한 인증 요청이 없습니다.'}, status=404)
+        
+        

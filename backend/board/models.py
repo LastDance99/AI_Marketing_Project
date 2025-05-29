@@ -34,4 +34,5 @@ class EditorImage(models.Model):
     def __str__(self):
         return f"EditorImage {self.id}"  
     
+    #무 야 호~  
     

@@ -7,6 +7,7 @@ from .serializers import PostSerializer, AttachmentSerializer, EditorImageSerial
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import json
 
 # Create your views here.
 
@@ -23,7 +24,9 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'author', 'content']
+    search_fields = ['title', 'author__username', 'content']
+    #author는 user 모델을 참조하는 ForeignKey. icontains는 CharField나 TextField에서만 지원
+    #ForeignKey를 거쳐서 참조하려면 __(더블 언더바) 문법을 써야 함 author → User.username 이니까 author__username
     permission_classes = [IsAuthorOrReadOnly]  # ✅ 로그인한 사용자만 작성 가능
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
@@ -47,7 +50,7 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         post = serializer.save()
         # remove attachments if requested
-        remove_ids = request.data.get('remove_attachment_ids', [])
+        remove_ids = json.loads(request.data.get('remove_attachment_ids', '[]'))
         for att_id in remove_ids:
             Attachment.objects.filter(id=att_id, post=post).delete()
         # add new files
@@ -79,5 +82,3 @@ class EditorImageUploadView(APIView):
         file_url = serializer.data['file']
         return Response({ 'url': request.build_absolute_uri(file_url) }, status=status.HTTP_201_CREATED)
     
-
-# 오늘은 집에 가서 하루종일 생각해봐야겠다

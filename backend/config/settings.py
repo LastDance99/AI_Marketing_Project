@@ -31,9 +31,9 @@ ALLOWED_HOSTS = [
     'localhost',      # 자기 자신 도메인 방식
     '192.168.0.171',   # ✅ 너의 내부 IP (프론트에서 접근할 주소!)
 ]
+#192.168.0.69:3000 프론트 주소(변경될 수 있음)
 
-
-# Application definition
+# Application definition 
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -165,9 +165,20 @@ REST_FRAMEWORK = {
     
 }
 
+#google gmail SMTP 설정
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'simyuong68@gmail.com'  # 본인 Gmail 주소
+EMAIL_HOST_PASSWORD = 'lymi zpvz sttj kyhg'         # Gmail 앱 비밀번호
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+#Tip: 실제 코드에서는 EMAIL_HOST_PASSWORD에 절대로 평문을 두지 말고, 반드시 .env나 AWS/GCP Secret Manager 등에 보관
+
+
 
 from datetime import timedelta
-
+#JWT Tokken 설정
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),

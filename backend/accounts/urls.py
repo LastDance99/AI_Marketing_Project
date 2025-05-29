@@ -7,6 +7,8 @@ from .views import (
     CheckUsernameView, 
     CheckEmailView,
     CustumTokenObtainPairView,
+    SendVerificationEmailView, 
+    VerifyEmailCodeView,
     )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -23,5 +25,9 @@ urlpatterns = [
     path('logout/', LogoutView.as_view()),
     path('check-username/', CheckUsernameView.as_view()),
     path('check-email/',    CheckEmailView.as_view()),
+    path('send-verification/', SendVerificationEmailView.as_view()),
+    path('verify-code/', VerifyEmailCodeView.as_view()),
 ]
-# 우린 회원가입, 로그인, 로그아웃 만들어야 함 
+# 우린 회원가입, 로그인, 로그아웃 만들어야 함 모델 학습도 가능하지 근데 일단 
+# 애니메이션 검색 기능을 우리 웹사이트에서 구현할수있다는게 너무 큰듯
+# csv파일을 데이터베이스에 넣는건 그냥 ai 딸깍임 
